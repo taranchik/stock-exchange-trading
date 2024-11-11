@@ -15,25 +15,25 @@ class OrderBook:
             print("Order with such id already exists")
             return
         
-        prices = self.prices[order_type]
         self.orders[id] = {"type": order_type, "price": price}
+        prices = self.prices[order_type]
 
         prices.setdefault(price, {})[id] = quantity
     
-    def remove(self, id: str, order_type: Literal["BUY", "SELL"], price: float, quantity: int) -> None:
+    def remove(self, id: str) -> None:
         if id not in self.orders:
             print("Order with such id does not exist")
             return
         
-        prices = self.prices[order_type]
+        order = self.orders[id]
+        prices = self.prices[order["type"]]
 
-        if prices[price][id] == quantity:
-          del prices[price][id]
-          
-          if not prices[price]:
-              del prices[price]
-        else:
-          prices[price][id] -= quantity
+        del prices[order["price"]][id]
+        del self.orders[id]
+
+        if not prices[order["price"]]:
+            del prices[order["price"]]
+
 
 ORDERS = [
     {"id": "001", "order": "Buy", "type": "Add", "price": 20.0, "quantity": 100},
@@ -51,6 +51,6 @@ if __name__ == "__main__":
         if order["type"] == "Add":
             order_book.add(order["id"], order["order"].upper(), order["price"], order["quantity"])
         else:
-            order_book.remove(order["id"], order["order"].upper(), order["price"], order["quantity"])
+            order_book.remove(order["id"])
 
         print(f'Best BUY price is {order_book.prices["BUY"].peekitem(0)[0] if order_book.prices["BUY"] else "None"} and best SELL price is {order_book.prices["SELL"].peekitem(0)[0] if order_book.prices["SELL"] else "None"}')
